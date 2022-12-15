@@ -1,0 +1,129 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Engineering systematic musicology</title>
+
+<style>
+
+    @font-face {
+      font-family: 'UGent Panno Text SemiLight';
+      font-style: normal;
+      font-weight: 400;
+      src: url('/fonts/UGentPannoText-SemiLight.woff2') format('woff2');
+    }
+
+    @font-face {
+      font-family: 'UGent Panno Text';
+      font-style: normal;
+      font-weight: 400;
+      src: url('/fonts/UGentPannoText-Normal.woff2') format('woff2');
+    }
+
+    body {
+      font-family: 'UGent Panno Text SemiLight';
+      font-weight: normal;
+      font-style: normal;
+    }
+
+    canvas {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      left: 0;
+      top: 0;
+    }
+
+    #controls {
+      position: absolute;
+      z-index: 8;
+      bottom:0;
+      left:0;
+      width: 100%;
+    }
+
+    #audioFile {
+      position: absolute;
+      z-index: 8;
+      bottom:0;
+      left:0;
+      width: 100%;
+    }
+  </style>
+</head>
+
+<body>
+
+<div id="controls">
+	 <audio crossorigin="anonymous" id="audioFile" preload="audio/MR.1976.25.3-A2.mp3" src="audio/MR.1976.25.3-A2.mp3" controls></audio> 
+</div>
+
+<canvas width="500" height="500" id="spectrogram" style="z-index: 1;"></canvas>
+<canvas width="500" height="500" id="hist"        style="z-index: 2;"></canvas>
+<canvas width="500" height="500" id="labels"      style="z-index: 3;"></canvas>	
+<canvas width="500" height="500" id="axis"        style="z-index: 4;"></canvas>
+
+<!-- Yin pitch detector -->
+<script src="js/detector.js"></script>
+<!-- Color manipulation library -->
+<script src="js/chroma.js"></script>
+<!-- Spectrogram visualization -->
+
+<script>
+  
+  //Midi key start and stop (Melodic range = region of interest)
+var midiKeyStart = 24.0; // +-100 Hz
+var midiKeyStop = 120.0; //+- 8000Hz
+
+var midiKeyStartThreshold = 24.0; // +-200Hz
+var midiKeyStopThreshold= 120.0; //+- 8000Hz
+
+var midiKeyRange = midiKeyStop - midiKeyStart;
+
+</script>
+<script src="js/spectrogram.js"></script>
+
+<!--support drag and drop -->
+<script>
+
+  window.addEventListener('load', function() {
+    var dropzone = document.querySelector('#axis');
+    dropzone.addEventListener('drop', handleDrop, false)
+    dropzone.addEventListener('dragover', handleDragOver, false)
+  });
+
+  var handleDragOver = function(e) {
+      e.preventDefault()
+      e.stopPropagation()
+  }
+
+  var handleDrop = function(e) {
+      e.preventDefault()
+      e.stopPropagation()
+
+      var audioElement = document.querySelector('#audioFile')
+      audioElement.pause();
+      var files = e.dataTransfer.files
+      for (var i = 0; i < files.length; i++) {
+          var file = files[i];
+
+          console.log("Dropped " + file.name);
+
+          var reader  = new FileReader();
+
+          reader.addEventListener("load", function () {
+            audioElement.src = reader.result;
+            audioElement.load();
+            console.log("Loaded dropped audio");
+
+          }, false);
+
+          if (file) {
+            reader.readAsDataURL(file);
+          }          
+      }
+  }
+</script>
+
+</body>
