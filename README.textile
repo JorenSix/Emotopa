@@ -8,7 +8,7 @@ A first couple of building blocks have been implemented: audio decoding with ffm
 
 <div align="center">
 !./media/emotopa_screenshot.png(Exctracting pitch information with)!
-<small>Fig. Synchronizing audio with the SyncSink user interface.</small></div>
+<small>Fig. Extractin pitch information using the Emotopa web application.</small></div>
 
 The name alludes to the "Apotome":https://isartum.net/apotome software. In that software you start from a scale to make audio, here you start from audio to make a scale. Emotopa is the reverse of Apotome.
 
