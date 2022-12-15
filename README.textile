@@ -1,14 +1,14 @@
 h1. Emotopa
 
-Emotopa is webapplication to extract pitch information from music. The current version is a hack for the "Music Hack Day India":https://musichackdayindia.github.io/
+Emotopa is web-application to extract pitch information from music. The current version is a hack for the "Music Hack Day India":https://musichackdayindia.github.io/
 
 The idea is to develop a web based version of "Tarsos":https://github.com/JorenSix/Tarsos which is software to 'analyze and experiment with pitch organization in all kinds of musics'.
 
 A first couple of building blocks have been implemented: audio decoding with ffmpeg, pitch extraction with yin and a kernel density estimate construction.
 
 <div align="center">
-!./media/emotopa_screenshot.png(Exctracting pitch information with)!
-<small>Fig. Extractin pitch information using the Emotopa web application.</small></div>
+!./media/emotopa_screenshot.png(Extracting pitch information with)!
+<small>Fig. Extracting pitch information using the Emotopa web application.</small></div>
 
 The name alludes to the "Apotome":https://isartum.net/apotome software. In that software you start from a scale to make audio, here you start from audio to make a scale. Emotopa is the reverse of Apotome.
 
