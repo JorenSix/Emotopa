@@ -9,6 +9,9 @@
   var scala = null;
   var annotations = null;
 
+  const pitchDetectionWorker = new Worker('js/pitch.detector.worker.js');
+
+
   var handlePCHClick = function(e) {
     var pitch_class_histogram = document.querySelector('#pitch_class_histogram');
     const rect = pitch_class_histogram.getBoundingClientRect();
@@ -20,51 +23,36 @@
     playFrequency(absoluteCentsToHz(rel_cents+cents_offset),0.233);
   }
 
-  var handleTranscodedAudioSamples = async function(raw_audio_samples){
-	  console.log(raw_audio_samples.length);
-	  var yin_buffer_size = 1024;
-	  var yin_step_size = 1024;
-	  var kde = emptyKernelDensityEstimate();
+  var handlePitchEstimates = function(estimates){
+  	var kde = emptyKernelDensityEstimate();
 	  var kernel = gaussianKernel(7);
 
-	  onProgress(0);
-
-	  for(var sample_index = 0 ; sample_index < raw_audio_samples.length - yin_buffer_size; sample_index += yin_step_size){
-	    var start_index = sample_index;
-	    var stop_index = sample_index + yin_buffer_size;
-	    var analysis_buffer = raw_audio_samples.slice(start_index,stop_index);
-	    var buffer_start_time_in_s = sample_index / 16000.0;
-	    var percentage_finished = sample_index/raw_audio_samples.length * 100.0
-	    var detected_pitch_in_hz = detectPitchYin(analysis_buffer,16000);
-	    if(detected_pitch_in_hz){
-	      detected_pitch_in_cents = hzToAbsoluteCents(detected_pitch_in_hz);
-	      //console.log(buffer_start_time_in_s,"s",detected_pitch_in_hz,"Hz",detected_pitch_in_cents,"abs cents",percentage_finished,"% done");
-	      annotations.push({time_in_s: buffer_start_time_in_s, pitch_in_hz: detected_pitch_in_hz, pitch_in_cents: detected_pitch_in_cents});
-	      addToEstimate(kde,kernel,detected_pitch_in_cents);
-	    }
-	    //console.log(percentage_finished,"% done");
-	    onProgress(percentage_finished);
-
-	    if(percentage_finished % 10 == 0){
-	    	const collapsed_kde = collapsedKernelDensityEstimate(kde);
-	  		normalizePeak(collapsed_kde);
-	  		drawPCH("pitch_class_histogram",collapsed_kde);
-	    }
-
+	  for(var i = 0; i < estimates.length ; i++){
+	  	addToEstimate(kde,kernel,estimates[i]['pitch_in_cents']);
 	  }
-	  
 	  const collapsed_kde = collapsedKernelDensityEstimate(kde);
-
 	  normalizePeak(collapsed_kde);
 
 	  pch = collapsed_kde;
 	  ph = kde;
 
 	  drawPCH("pitch_class_histogram",collapsed_kde);
+	  drawPitchEstimates("pitch_estimates",estimates);
+  }
 
-	  drawPitchEstimates("pitch_estimates",annotations);
+  var handleTranscodedAudioSamples = function(raw_audio_samples){
+	  console.log(raw_audio_samples.length);
 
-	  onProgress(100);
+	  pitchDetectionWorker.onmessage= (event) => {
+	  	if(event.data['progress']){
+	  		onProgress(event.data['progress']);
+	  	}
+	  	if(event.data['pitch_estimates']){
+	  		handlePitchEstimates(event.data['pitch_estimates'])
+	  	}
+	  }
+
+	  pitchDetectionWorker.postMessage([raw_audio_samples,16000.0]);
 
 	  var hidden_elements = document.getElementsByClassName('result');
 		for (var i = 0; i < hidden_elements.length; ++i) {
@@ -194,13 +182,8 @@ function onProgress(progress){
 		  progress_bar.style["width"] = progress + "%";
 		  progress_bar.textContent = progress + "%";
 		}
-		console.log("Handle progress",progress);
 		prevProgress = progress;
-	}else{
-		console.log("Ignored progress",progress)
-	}
-	
-	
+	}	
 }
 
 

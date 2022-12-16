@@ -75,7 +75,7 @@ function drawPitchEstimates(identifier,annotations){
 
 		var x = time_in_s/duration_in_s * canvas.width;
 		var y = (pitch_in_cents - min_pitch_in_cents) / pitch_range_in_cents * canvas.height;
-		console.log(x,y,time_in_s,pitch_in_cents)
+		//console.log(x,y,time_in_s,pitch_in_cents)
 	
 	    ctx.fillRect(x,y,2,2);
 	}
