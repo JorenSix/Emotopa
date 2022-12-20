@@ -15,6 +15,11 @@ The name alludes to the "Apotome":https://isartum.net/apotome software. In that 
 
 h2(#credits). Credits
 
-The Emotopa software was developed at "IPEM, Ghent University":http://www.ipem.ugent.be/ by Joren Six.
+The Emotopa software was developed at "IPEM, Ghent University":http://www.ipem.ugent.be/ by Joren Six. It also includes other software:
+
+* "ffmpeg":https://ffmpeg.org/ __'A complete, cross-platform solution to record, convert and stream audio and video.'__
+* "ffmpeg.audio.wasm":https://github.com/JorenSix/ffmpeg.audio.wasm A wasm version of ffmpeg with a focus on audio extraction.
+* "KD-tree":https://github.com/ubilabs/kd-tree-javascript/blob/master/kdTree.js by Ubilabs
+* "YIN pitch detector":https://github.com/peterkhayes/pitchfinder/blob/master/src/detectors/yin.ts
 
 The original Emotopa was made during the "Music Hack Day India":https://musichackdayindia.github.io/. Travel was made possible thanks to travel funds by the FWO travel grant K1D2222N and the Ghent University BOF funded project PaPiOM.

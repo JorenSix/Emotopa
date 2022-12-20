@@ -78,7 +78,6 @@ function initialize(){
   
 }
 
-
 window.addEventListener('mousemove', drawMouseLabel, false);
 
 function getMousePos(canvas, evt) {

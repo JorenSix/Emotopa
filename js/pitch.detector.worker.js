@@ -1,3 +1,4 @@
+//adapted from https://github.com/peterkhayes/pitchfinder/blob/master/src/detectors/yin.ts
 
 self.onmessage = (e) => {
   const raw_audio_samples = e.data[0];

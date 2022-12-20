@@ -1,3 +1,5 @@
+// from https://github.com/ubilabs/kd-tree-javascript/blob/master/kdTree.js 
+
  function Node(obj, dimension, parent) {
     this.obj = obj;
     this.left = null;

@@ -4,10 +4,13 @@
       e.stopPropagation()
   }
 
-  var ph = null;
-  var pch = null;
-  var scala = null;
-  var annotations = null;
+  var ph = [];
+  var pch = [];
+  var scale = [0,100,200,300,400,500,600,700,800,900,1000,1100,1200];
+  var annotations = [];
+  var peak_pick_diff = 90;//cents
+  var peak_pick_threshold = 0.1;//from 0.0-1.0
+  var audio_sample_rate = 16000
 
   const pitchDetectionWorker = new Worker('js/pitch.detector.worker.js');
 
@@ -24,20 +27,18 @@
   }
 
   var handlePitchEstimates = function(estimates){
-  	var kde = emptyKernelDensityEstimate();
+  	var ph = emptyKernelDensityEstimate();
 	  var kernel = gaussianKernel(7);
 
 	  for(var i = 0; i < estimates.length ; i++){
-	  	addToEstimate(kde,kernel,estimates[i]['pitch_in_cents']);
+	  	addToEstimate(ph,kernel,estimates[i]['pitch_in_cents']);
 	  }
-	  const collapsed_kde = collapsedKernelDensityEstimate(kde);
-	  normalizePeak(collapsed_kde);
+	  pch = collapsedKernelDensityEstimate(ph);
+	  normalizePeak(pch);
 
-	  pch = collapsed_kde;
-	  ph = kde;
-
-	  drawPCH("pitch_class_histogram",collapsed_kde);
-	  drawPitchEstimates("pitch_estimates",estimates);
+	  scale = pickPeaks(pch,peak_pick_diff,peak_pick_threshold);
+	  drawPCH("pitch_class_histogram",pch,scale);
+	  //drawPitchEstimates("pitch_estimates",estimates);
   }
 
   var handleTranscodedAudioSamples = function(raw_audio_samples){
@@ -52,7 +53,7 @@
 	  	}
 	  }
 
-	  pitchDetectionWorker.postMessage([raw_audio_samples,16000.0]);
+	  pitchDetectionWorker.postMessage([raw_audio_samples,audio_sample_rate]);
 
 	  var hidden_elements = document.getElementsByClassName('result');
 		for (var i = 0; i < hidden_elements.length; ++i) {
@@ -65,7 +66,7 @@
       console.log("Dropped " + file.name);
       var reader  = new FileReader();
 
-      var audioElement = document.getElementById("audioFile")
+      var audioElement = document.getElementById("audioFile");
       annotations = []
 
       reader.addEventListener("load", function () {
@@ -74,7 +75,7 @@
         console.log("Loaded dropped audio");
 
         var inputFile = new MediaFile(file.name,file.arrayBuffer());
-        inputFile.transcode(16000,onProgress).then(handleTranscodedAudioSamples);
+        inputFile.transcode(audio_sample_rate,onProgress).then(handleTranscodedAudioSamples);
 
       }, false);
 
@@ -92,9 +93,14 @@ function handleFileUploadButton(ev){
     }
 }
 
+function onResize(ev) {
+	drawPCH("pitch_class_histogram",pch,scale);
+}
 
 window.onload = function() {
 	document.getElementById('uploader').addEventListener('change', handleFileUploadButton);
+
+	window.addEventListener("resize", onResize);
 
 	window.addEventListener('dragenter', dragEnterHandler);
 
@@ -103,10 +109,36 @@ window.onload = function() {
 	document.getElementById("drop_zone").addEventListener('drop', dropHandler);
 	document.getElementById("drop_zone").addEventListener('dragover', dragOverHandler);
 
+	document.getElementById("diffRange").addEventListener('input',diffRangeInput);
+	document.getElementById("thresholdRange").addEventListener('input',thresholdRangeInput);
+	document.getElementById("playbackSpeedRange").addEventListener('input',playbackSpeedRangeInput);
+
 	document.getElementById('uploader_button').addEventListener('click', () => {document.getElementById('uploader').click();});
 
 	document.querySelector('#pitch_class_histogram').addEventListener('click',handlePCHClick,false);
+
+	onResize(null);
 };
+
+function diffRangeInput(ev){
+	peak_pick_diff = ev.srcElement.value;
+	//rerun peack picking with new values and draw pch:
+	scale = pickPeaks(pch,peak_pick_diff,peak_pick_threshold);
+	drawPCH("pitch_class_histogram",pch,scale);
+}
+
+function thresholdRangeInput(ev){
+	peak_pick_threshold = ev.srcElement.value / 100.0;
+	//rerun peack picking with new values and draw pch:
+	scale = pickPeaks(pch,peak_pick_diff,peak_pick_threshold);
+	drawPCH("pitch_class_histogram",pch,scale);
+}
+
+function playbackSpeedRangeInput(ev){
+	var audioElement = document.getElementById("audioFile");
+	playback_speed = ev.srcElement.value / 100.0;
+	audioElement.playbackRate = playback_speed;
+}
 
 function dragOverHandler(ev) { ev.preventDefault();}
 function dragEnterHandler(ev){ document.getElementById("drop_zone").style.display = "flex";}
@@ -186,8 +218,6 @@ function onProgress(progress){
 	}	
 }
 
-
-
 function downloadInfo(filename,kde){
 
 	var data = "cents,value\n";
@@ -202,9 +232,7 @@ function downloadInfo(filename,kde){
 
 
 function downloadJSON(filename,jsonObject){
-
 	var blob = new Blob([JSON.stringify(jsonObject)], {type: "application/json"});
-
 	downloadBlob(blob, filename)
 }
 

@@ -58,25 +58,20 @@ function normalizePeak(kde){
 
 function findMax(array){
 	var max = 0;
-
 	for(var i = 0 ; i < array.length ; i++){
-		max = Math.max(array[i]);
+		max = Math.max(max,array[i]);
 	}
 	return max;
 }
 
-function pickPeaks(kde){
+function pickPeaks(kde,min_diff,threshold){
 
-	var min_diff = 150; //cents (max )
-	var threshold = 0.2;
-
-	var half_diff = min_diff/2;
+	var half_diff = Math.floor(min_diff/2);
 	var max_filtered = [];
 
 	for(var i = 0; i < 1200 ; i++){
 		var start = i - half_diff;
 		var stop = i + half_diff;
-
 		var max = 0;
 		if(start < 0){
 			first = findMax(kde.slice(1200-start,1200))
@@ -91,7 +86,7 @@ function pickPeaks(kde){
 		}
 		max_filtered.push(max);
 	}
-  console.log(max_filtered);
+
 	var peaks = [];
 
 	for(var i = 0; i < 1200 ; i++){

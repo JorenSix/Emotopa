@@ -22,17 +22,8 @@ function drawLine(canvas,ctx,x1,y1,x2,y2){
     ctx.stroke();
 }
 
-function drawPCH(identifier,kde){
-	var canvas = document.getElementById(identifier);
+function drawHistogram(canvas,kde){
 	var ctx = canvas.getContext('2d');
-
-	canvas.width = canvas.clientWidth;
-	canvas.height = canvas.clientHeight;
-
-	for(var i = 100 ; i <= 1200 ; i+=100){
-		drawLine(canvas,ctx,i,0,i,1.0);
-	}
-
 	ctx.lineWidth = 1;
 	ctx.strokeStyle = "blue";
 	ctx.beginPath();
@@ -41,6 +32,23 @@ function drawPCH(identifier,kde){
     	ctx.lineTo(centsToX(canvas,i),rangeToY(canvas,kde[i]));
 	}
     ctx.stroke();
+}
+
+function drawScale(canvas,scale){
+	var ctx = canvas.getContext('2d');
+	for(var i = 0 ; i < scale.length ; i++){
+		drawLine(canvas,ctx,scale[i],0,scale[i],1.0);
+	}
+
+}
+function drawPCH(identifier,kde,scale){
+	var canvas = document.getElementById(identifier);
+
+	canvas.width = canvas.clientWidth;
+	canvas.height = canvas.clientHeight;
+
+	drawScale(canvas,scale);
+	drawHistogram(canvas,kde);	
 }
 
 function drawPitchEstimates(identifier,annotations){

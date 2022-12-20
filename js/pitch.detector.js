@@ -1,3 +1,4 @@
+//from https://github.com/peterkhayes/pitchfinder/blob/master/src/detectors/yin.ts
 
 function detectPitchYin(float32Buffer,sampleRate) {
 
